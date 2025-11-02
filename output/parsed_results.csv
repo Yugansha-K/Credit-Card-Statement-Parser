@@ -1,0 +1,6 @@
+provider_guess,cardholder_name,card_last4,statement_period,payment_due_date,total_amount_due,filename
+AMEX,Vikram Nair,7890,07 Oct 2024 - 06 Nov 2024,2024-11-22,11836.00,American_Express_Statement.pdf
+AXIS,Sneha Desai,3456,02 Oct 2024 - 01 Nov 2024,2024-11-18,28952.00,Axis_Statement.pdf
+ICICI,Priya Sharma,5678,05 Oct 2024 - 04 Nov 2024,2024-11-20,41395.00,ICICI_Statement.pdf
+SBI,Amit Patel,9012,10 Oct 2024 - 09 Nov 2024,2024-11-25,22689.00,SBI_Statement.pdf
+HDFC,Rahul Mehta,1234,01 Oct 2024 - 31 Oct 2024,2024-11-15,24186.00,HDFC_Statement.pdf

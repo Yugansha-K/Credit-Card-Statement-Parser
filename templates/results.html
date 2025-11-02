@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Parsed Results Summary</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light">
+<div class="container py-5">
+  <div class="card shadow-lg p-5">
+    <h2 class="fw-bold text-success mb-4">Parsed Results Summary</h2>
+
+    <!-- Quick Summary -->
+    <div class="alert alert-info">
+      <strong>💰 Total Outstanding:</strong> ₹{{ summary.total_due | round(2) }} &nbsp; | &nbsp;
+      <strong>📅 Earliest Due Date:</strong> {{ summary.earliest_due }}
+    </div>
+
+    <!-- Results Table -->
+    <table class="table table-bordered table-striped">
+      <thead class="table-light">
+        <tr>
+          <th>Filename</th>
+          <th>Provider</th>
+          <th>Cardholder</th>
+          <th>Card Last 4</th>
+          <th>Statement Period</th>
+          <th>Payment Due Date</th>
+          <th>Total Amount Due (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in extracted_list %}
+        <tr>
+          <td>{{ e.filename }}</td>
+          <td>{{ e.provider_guess }}</td>
+          <td>{{ e.cardholder_name }}</td>
+          <td>{{ e.card_last4 }}</td>
+          <td>{{ e.statement_period }}</td>
+          <td>{{ e.payment_due_date }}</td>
+          <td>{{ e.total_amount_due }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Charts -->
+    <div class="mt-5">
+      <h4 class="fw-bold text-primary mb-3">📊 Insights Summary</h4>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <canvas id="chartTotalDue"></canvas>
+        </div>
+        <div class="col-md-6 mb-3">
+          <canvas id="chartCount"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <a href="{{ url_for('download_results') }}" class="btn btn-success">Download Combined CSV</a>
+      <a href="{{ url_for('index') }}" class="btn btn-secondary ms-2">Upload Again</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const data = {{ extracted_list | tojson }};
+  const totals = {};
+  const counts = {};
+
+  data.forEach(item => {
+    const provider = item.provider_guess || "Unknown";
+    const amt = parseFloat(item.total_amount_due?.replace(/[₹,]/g, "")) || 0;
+    totals[provider] = (totals[provider] || 0) + amt;
+    counts[provider] = (counts[provider] || 0) + 1;
+  });
+
+  const providers = Object.keys(totals);
+  const amounts = Object.values(totals);
+  const countValues = Object.values(counts);
+
+  new Chart(document.getElementById("chartTotalDue"), {
+    type: "bar",
+    data: {
+      labels: providers,
+      datasets: [{
+        label: "Total Amount Due (₹)",
+        data: amounts,
+        backgroundColor: [
+          "rgba(54, 162, 235, 0.7)",
+          "rgba(255, 99, 132, 0.7)",
+          "rgba(255, 206, 86, 0.7)",
+          "rgba(75, 192, 192, 0.7)",
+          "rgba(153, 102, 255, 0.7)"
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true, title: { display: true, text: "Amount (₹)" } }
+      },
+      plugins: {
+        title: { display: true, text: "Total Outstanding Amount per Bank" },
+        legend: { display: false }
+      }
+    }
+  });
+
+  new Chart(document.getElementById("chartCount"), {
+    type: "pie",
+    data: {
+      labels: providers,
+      datasets: [{
+        data: countValues,
+        backgroundColor: [
+          "#4CAF50", "#FF9800", "#2196F3", "#E91E63", "#9C27B0"
+        ]
+      }]
+    },
+    options: {
+      plugins: {
+        title: { display: true, text: "Number of Statements per Provider" }
+      }
+    }
+  });
+</script>
+</body>
+</html>
